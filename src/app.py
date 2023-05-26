@@ -216,7 +216,5 @@ def date_cum_count_media_type(chatbot_value, platform_value, website_value, n_in
 
     return [unique_users, tot_questions, avg_mess_per_user, minimum_mess_per_user, maximum_mess_per_user, avg_accuracy, fig_acc_time, fig_cum_sum_by_date, fig_intent, fig_browser]
 
-
-
 if __name__ == '__main__':
-    app.run_server(host="0.0.0.0",port=8070,debug=False)
+    app.run_server(host="0.0.0.0",port=8070,debug=True)
