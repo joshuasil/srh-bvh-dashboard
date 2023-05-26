@@ -1,6 +1,6 @@
 psycopg2-binary==2.9.6
 gunicorn==20.1.0
-mod_wsgi-standalone
+mod_wsgi==4.9.0
 appnope==0.1.3
 asttokens==2.2.1
 attrs==23.1.0
