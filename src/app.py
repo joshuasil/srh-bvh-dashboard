@@ -79,8 +79,8 @@ colors = {
     'line color': '#056B7D'
 }
 
-covid_logo = Image.open('/Users/joshvasilvasstar/Documents/clinicchat/dashboards/srh_bvh_app/COVID_chatbot_logo.png')
-sph_logo = Image.open('/Users/joshvasilvasstar/Documents/clinicchat/dashboards/srh_bvh_app/coloradosph_stacked_schools.jpg')
+covid_logo = Image.open('COVID_chatbot_logo.png')
+sph_logo = Image.open('coloradosph_stacked_schools.jpg')
 
 
 df_confidence = df_comp.groupby(['request_date'])['confidence'].mean().reset_index(name='avg_confidence')
@@ -222,4 +222,4 @@ def date_cum_count_media_type(begin_date, end_date):
     return [unique_users, tot_questions, avg_mess_per_user, minimum_mess_per_user, maximum_mess_per_user, avg_accuracy, fig_acc_time, fig_cum_sum_by_date, fig_intent, fig_browser]
 
 if __name__ == '__main__':
-    app.run_server(host="0.0.0.0", port=8080,debug=True)
+    app.run_server(host="localhost", port=8080,debug=True)

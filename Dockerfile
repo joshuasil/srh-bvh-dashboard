@@ -2,8 +2,8 @@ FROM ubuntu
 
 
 RUN apt-get update
-RUN apt-get install -y python3 python3-pip
-RUN yes yes | apt-get install apache2-dev
+RUN apt-get install -y python3.9 python3-pip
+
 
 COPY requirements.txt /tmp/requirements.txt
 RUN pip3 install -r /tmp/requirements.txt
@@ -13,4 +13,4 @@ WORKDIR /srh-bvh-dashboard/src
 
 EXPOSE 8080
 
-CMD gunicorn --bind 0.0.0.0:$PORT app:server
+CMD gunicorn --bind 0.0.0.0:8080 app:server
