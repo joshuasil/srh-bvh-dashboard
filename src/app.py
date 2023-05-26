@@ -1,6 +1,7 @@
 import pandas as pd
 import numpy as np
 import statistics as stat
+from datetime import datetime
 
 ## Plotly and Dash Imports
 import dash
@@ -170,7 +171,7 @@ figures_div
     dash.dependencies.Output('avg_mess_per_user', 'children'),
     dash.dependencies.Output('minimum_mess_per_user', 'children'),
     dash.dependencies.Output('maximum_mess_per_user', 'children'),
-    dash.dependencies.Output('accuracy', 'children'),
+    dash.dependencies.Output('avg_accuracy', 'children'),
     dash.dependencies.Output('fig_acc_time', 'figure'),
     dash.dependencies.Output('fig_cum_sum_by_date', 'figure'),
     dash.dependencies.Output('fig_browser', 'figure'),
@@ -182,8 +183,12 @@ figures_div
 
 # Callback Function
 
-def date_cum_count_media_type(chatbot_value, platform_value, website_value, n_intents, begin_date, end_date):
-    updated_df = df_comp[(df_comp['request_date'] >= begin_date) & (df_comp['request_date'] <= end_date)]
+def date_cum_count_media_type(begin_date, end_date):
+    begin_date = datetime.strptime(begin_date,'%Y-%m-%d')
+    end_date = datetime.strptime(end_date,'%Y-%m-%d')
+    updated_df = df_comp.copy()
+    updated_df['request_timestamp'] = pd.to_datetime(updated_df['request_timestamp'])
+    updated_df = df_comp[(df_comp['request_timestamp'] >= begin_date) & (df_comp['request_timestamp'] <= end_date)]
     unique_users = updated_df['user_id'].nunique()
     tot_questions = updated_df['user_id'].count()
     avg_mess_per_user = round(updated_df.groupby('user_id')['user_id'].count().mean(),2)
@@ -217,4 +222,4 @@ def date_cum_count_media_type(chatbot_value, platform_value, website_value, n_in
     return [unique_users, tot_questions, avg_mess_per_user, minimum_mess_per_user, maximum_mess_per_user, avg_accuracy, fig_acc_time, fig_cum_sum_by_date, fig_intent, fig_browser]
 
 if __name__ == '__main__':
-    app.run_server(host="0.0.0.0",port=8070,debug=True)
+    app.run_server(host="0.0.0.0",debug=True)
