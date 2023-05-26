@@ -156,7 +156,7 @@ dbc_css = (
 )
 
 app = Dash(__name__, external_stylesheets=[dbc.themes.BOOTSTRAP, dbc_css])
-
+server = app.server
 app.layout = html.Div(style={'padding':10, 'backgroundColor': colors['background']}, children =[html.Div(navbar),
     dbc.Col(
                     children=[dbc.Card(
@@ -222,4 +222,4 @@ def date_cum_count_media_type(begin_date, end_date):
     return [unique_users, tot_questions, avg_mess_per_user, minimum_mess_per_user, maximum_mess_per_user, avg_accuracy, fig_acc_time, fig_cum_sum_by_date, fig_intent, fig_browser]
 
 if __name__ == '__main__':
-    app.run_server(host="0.0.0.0",debug=True)
+    app.run_server(host="0.0.0.0", port=8080,debug=True)
