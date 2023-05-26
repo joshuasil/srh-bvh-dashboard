@@ -1,7 +1,7 @@
 import pandas as pd
 import numpy as np
 import statistics as stat
-from datetime import datetime
+from datetime import datetime, date
 
 ## Plotly and Dash Imports
 import dash
@@ -46,7 +46,7 @@ sql_select_query = text('''SELECT * FROM public.srh_bvh_logs;''')
 sqlresult = conn.execute(sql_select_query)
 df_comp = pd.DataFrame(sqlresult.fetchall())
 df_comp.columns = sqlresult.keys()
-df_comp["request_timestamp"] = df_comp["request_timestamp"].dt.tz_localize('UTC').dt.tz_convert('US/Mountain')
+df_comp["request_timestamp"] = df_comp["request_timestamp"].dt.tz_localize('UTC').dt.tz_convert(None)
 df_comp.sort_values(by=["request_timestamp"], inplace=True, ascending=False)
 
 df_user_statistics = df_comp['conversation_id'].value_counts().rename_axis('users').reset_index(name='counts')
@@ -117,8 +117,8 @@ cards_global = [
         dbc.Row(
             [   dbc.Col(dbc.DropdownMenu(label='Beginning and End Dates',
                                     children=[dcc.DatePickerRange(id='begin_date',
-                                            min_date_allowed=df_comp['request_date'].min(),max_date_allowed=df_comp['request_date'].max(),
-                                            start_date = df_comp['request_date'].min(),end_date = df_comp['request_date'].max())],className="form-check")),
+                                            min_date_allowed=df_comp['request_date'].min(),max_date_allowed=date.today(),
+                                            start_date = df_comp['request_date'].min(),end_date = date.today())],className="form-check")),
                 dbc.Col(dbc.Card([html.P("Total Unique Users"),html.H6(unique_users,id='unique_users'),],
                                     body=True,color="primary",inverse=True,style={'textAlign': 'center',"line-height":'0px'},className="mx-1"),),
                 dbc.Col(dbc.Card([html.P("Total Questions"),html.H6(tot_questions,id='tot_questions'),],
@@ -208,7 +208,9 @@ def date_cum_count_media_type(begin_date, end_date):
     fig_acc_time.update_layout(title_x=0.5)
     fig_acc_time.update_xaxes(rangeslider_visible=True)
 
-    fig_cum_sum_by_date = px.line(updated_df, x='dates', y=['cum_sum', 'counts'], title = 'Cumulative Count by Day',
+    df_count_by_date_new =updated_df['request_date'].value_counts().sort_index().rename_axis('dates').reset_index(name='counts')
+    df_count_by_date_new['cum_sum'] = df_count_by_date_new['counts'].cumsum()
+    fig_cum_sum_by_date = px.line(df_count_by_date_new, x='dates', y=['cum_sum', 'counts'], title = 'Cumulative Count by Day',
                                 labels = {'dates': 'Date', 'cum_sum': 'Cumulative Sum', 'counts':'Counts'}, render_mode='webg1')
     fig_cum_sum_by_date.update_layout(title_x=0.5)
     fig_cum_sum_by_date.update_xaxes(rangeslider_visible=True)
@@ -226,4 +228,4 @@ def date_cum_count_media_type(begin_date, end_date):
     return [unique_users, tot_questions, avg_mess_per_user, minimum_mess_per_user, maximum_mess_per_user, avg_accuracy, fig_acc_time, fig_cum_sum_by_date, fig_intent, fig_browser]
 
 if __name__ == '__main__':
-    app.run_server(host="localhost", port=8080,debug=True)
+    app.run_server(host="localhost", port=8080,debug=False)
