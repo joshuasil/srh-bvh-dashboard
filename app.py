@@ -38,7 +38,6 @@ ipaddress=POSTGRES_ADDRESS,
 port=POSTGRES_PORT,
 dbname=POSTGRES_DBNAME))
 
-print(postgres_str)
 
 ## Create the Connection
 engine = create_engine(postgres_str, echo=False)
@@ -47,7 +46,7 @@ sql_select_query = text('''SELECT * FROM public.srh_bvh_logs;''')
 sqlresult = conn.execute(sql_select_query)
 df_comp = pd.DataFrame(sqlresult.fetchall())
 df_comp.head()
-print('Data read from database successfully')
+print(df_comp.columns)
 df_comp['request_timestamp'] = df_comp['request_timestamp'].dt.tz_localize('UTC').dt.tz_convert('US/Mountain')
 df_comp.sort_values(by=['request_timestamp'], inplace=True, ascending=False)
 
