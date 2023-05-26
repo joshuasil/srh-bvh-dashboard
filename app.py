@@ -156,7 +156,10 @@ dbc_css = (
     "https://cdn.jsdelivr.net/gh/AnnMarieW/dash-bootstrap-templates@V1.0.1/dbc.min.css"
 )
 
-app = Dash(__name__, external_stylesheets=[dbc.themes.BOOTSTRAP, dbc_css])
+app = Dash(__name__, external_stylesheets=[dbc.themes.BOOTSTRAP, dbc_css],
+           meta_tags=[
+        {"name": "viewport", "content": "width=device-width, initial-scale=1"}
+    ])
 server = app.server
 app.layout = html.Div(style={'padding':10, 'backgroundColor': colors['background']}, children =[html.Div(navbar),
     dbc.Col(
