@@ -5,3 +5,4 @@ pillow
 sqlalchemy
 python-dotenv
 pandas
+dash_bootstrap_components
