@@ -4,3 +4,4 @@ dash
 pillow
 sqlalchemy
 python-dotenv
+pandas
