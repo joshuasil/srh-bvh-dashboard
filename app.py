@@ -80,8 +80,8 @@ colors = {
     'line color': '#056B7D'
 }
 
-covid_logo = Image.open('src/COVID_chatbot_logo.png')
-sph_logo = Image.open('src/coloradosph_stacked_schools.jpg')
+covid_logo = Image.open('COVID_chatbot_logo.png')
+sph_logo = Image.open('coloradosph_stacked_schools.jpg')
 
 
 df_confidence = df_comp.groupby(['request_date'])['confidence'].mean().reset_index(name='avg_confidence')
