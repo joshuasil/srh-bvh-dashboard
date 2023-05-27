@@ -48,6 +48,8 @@ df_comp = pd.DataFrame(sqlresult.fetchall())
 df_comp.columns = sqlresult.keys()
 df_comp["request_timestamp"] = df_comp["request_timestamp"].dt.tz_localize('UTC').dt.tz_convert(None)
 df_comp.sort_values(by=["request_timestamp"], inplace=True, ascending=False)
+conn.commit()
+conn.close()
 
 df_user_statistics = df_comp['conversation_id'].value_counts().rename_axis('users').reset_index(name='counts')
 unique_users = df_comp['conversation_id'].nunique()
