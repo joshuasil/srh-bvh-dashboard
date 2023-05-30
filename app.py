@@ -60,7 +60,7 @@ minimum_mess_per_user = df_user_statistics['counts'].min()
 maximum_mess_per_user = df_user_statistics['counts'].max()
 df_comp['request_date'] = df_comp['request_timestamp'].dt.date
 df_count_by_date =df_comp['request_date'].value_counts().sort_index().rename_axis('dates').reset_index(name='counts')
-df_count_by_date['cum_sum'] = df_count_by_date['counts'].cumsum()
+df_count_by_date['cum_total'] = df_count_by_date['counts'].cumsum()
 
 # pandas group by and apply function
 df_confidence = df_comp.groupby(['request_date'])['confidence'].mean().reset_index(name='avg_confidence')
@@ -94,17 +94,17 @@ fig_acc_time.update_layout(title_x=0.5)
 fig_acc_time.update_xaxes(rangeslider_visible=True)
 
 
-fig_cum_sum_by_date = px.line(df_count_by_date, x='dates', y=['cum_sum', 'counts'], title = 'Cumulative Count by Day',
-                              labels = {'dates': 'Date', 'cum_sum': 'Cumulative Sum', 'counts':'Counts'}, render_mode='webg1')
-fig_cum_sum_by_date.update_layout(title_x=0.5)
-fig_cum_sum_by_date.update_xaxes(rangeslider_visible=True)
+fig_cum_total_by_date = px.line(df_count_by_date, x='dates', y=['cum_total', 'counts'], title = 'Cumulative Count by Day',
+                              labels = {'dates': 'Date', 'cum_total': 'Cumulative Sum', 'counts':'Counts'}, render_mode='webg1')
+fig_cum_total_by_date.update_layout(title_x=0.5)
+fig_cum_total_by_date.update_xaxes(rangeslider_visible=True)
 
 
 
 count_by_intent = df_comp[df_comp['intent_bot'].notna()]['intent_bot'].value_counts().rename_axis('intent').reset_index(name='counts')[:15]
 fig_intent = px.bar(count_by_intent, y='intent', x="counts", orientation='h', title = 'Top Intents', color = 'counts',
 labels = {'intent': 'Intent', 'counts': 'Count'}, color_continuous_scale = colors['intent'])
-fig_intent.update_layout(title_x=0.5)
+fig_intent.update_layout(title_x=0.5,yaxis=dict(autorange="reversed"))
 
 
 
@@ -173,12 +173,12 @@ cards_global = [
                 body=True,color="primary",inverse=True,style={'textAlign': 'center'},className="mx-1"),),
                 dbc.Col(dbc.Card([html.P("Average Confidence"),html.H6(avg_accuracy,id='avg_accuracy'),],
         body=True,color="primary",inverse=True,style={'textAlign': 'center'},className="mx-1"),),
-            dbc.Col([dbc.Row(ThemeChangerAIO(aio_id="theme", radio_props={"value":dbc.themes.FLATLY})),
-                    dbc.Row(modal),]),
+            dbc.Col(modal),
             ],style={'textAlign': 'center'}
         ),
     ]
 
+# theme changer: dbc.Row(ThemeChangerAIO(aio_id="theme", radio_props={"value":dbc.themes.FLATLY}))
 navbar = dbc.NavbarSimple(
     children=[html.Img(src=sph_logo,height='40px'),
     ],
@@ -190,7 +190,7 @@ navbar = dbc.NavbarSimple(
 
 
 figures_div = html.Div([
-    dbc.Row([dbc.Col(dcc.Graph(id='fig_acc_time',figure=fig_acc_time)),dbc.Col(dcc.Graph(id='fig_cum_sum_by_date',figure=fig_cum_sum_by_date))]),
+    dbc.Row([dbc.Col(dcc.Graph(id='fig_acc_time',figure=fig_acc_time)),dbc.Col(dcc.Graph(id='fig_cum_total_by_date',figure=fig_cum_total_by_date))]),
     dbc.Row([dbc.Col(dcc.Graph(id='fig_browser',figure=fig_browser)),dbc.Col(dcc.Graph(id='fig_intent',figure=fig_intent))])
 ])
 
@@ -215,7 +215,7 @@ figures_div
     dash.dependencies.Output('maximum_mess_per_user', 'children'),
     dash.dependencies.Output('avg_accuracy', 'children'),
     dash.dependencies.Output('fig_acc_time', 'figure'),
-    dash.dependencies.Output('fig_cum_sum_by_date', 'figure'),
+    dash.dependencies.Output('fig_cum_total_by_date', 'figure'),
     dash.dependencies.Output('fig_browser', 'figure'),
     dash.dependencies.Output('fig_intent', 'figure')],
     [dash.dependencies.Input('begin_date', 'start_date'),
@@ -244,23 +244,23 @@ def date_cum_count_media_type(begin_date, end_date):
     fig_acc_time.update_xaxes(rangeslider_visible=True)
 
     df_count_by_date_new =updated_df['request_date'].value_counts().sort_index().rename_axis('dates').reset_index(name='counts')
-    df_count_by_date_new['cum_sum'] = df_count_by_date_new['counts'].cumsum()
-    fig_cum_sum_by_date = px.line(df_count_by_date_new, x='dates', y=['cum_sum', 'counts'], title = 'Cumulative Count by Day',
-                                labels = {'dates': 'Date', 'cum_sum': 'Cumulative Sum', 'counts':'Counts'}, render_mode='webg1')
-    fig_cum_sum_by_date.update_layout(title_x=0.5)
-    fig_cum_sum_by_date.update_xaxes(rangeslider_visible=True)
+    df_count_by_date_new['cum_total'] = df_count_by_date_new['counts'].cumsum()
+    fig_cum_total_by_date = px.line(df_count_by_date_new, x='dates', y=['cum_total', 'counts'], title = 'Cumulative Count by Day',
+                                labels = {'dates': 'Date', 'cum_total': 'Cumulative Sum', 'counts':'Counts'}, render_mode='webg1')
+    fig_cum_total_by_date.update_layout(title_x=0.5)
+    fig_cum_total_by_date.update_xaxes(rangeslider_visible=True)
 
     count_by_intent = updated_df[updated_df['intent_bot'].notna()]['intent_bot'].value_counts().rename_axis('intent').reset_index(name='counts')[:15]
     fig_intent = px.bar(count_by_intent, y='intent', x="counts", orientation='h', title = 'Top Intents', color = 'counts',
     labels = {'intent': 'Intent', 'counts': 'Count'}, color_continuous_scale = colors['intent'])
-    fig_intent.update_layout(title_x=0.5)
+    fig_intent.update_layout(title_x=0.5,yaxis=dict(autorange="reversed"))
 
     count_by_browser = updated_df['browser_os_context'].value_counts(normalize=True).rename_axis('browser').reset_index(name='counts')
     fig_browser =px.pie(count_by_browser, values='counts', names='browser', title='Browser Percentages',
     labels = {'counts': 'count', 'hour': 'Hour'}, color_discrete_sequence=[colors['browser']])
     fig_browser.update_layout(title_x=0.5)
 
-    return [unique_users, tot_questions, avg_mess_per_user, minimum_mess_per_user, maximum_mess_per_user, avg_accuracy, fig_acc_time, fig_cum_sum_by_date, fig_intent, fig_browser]
+    return [unique_users, tot_questions, avg_mess_per_user, minimum_mess_per_user, maximum_mess_per_user, avg_accuracy, fig_acc_time, fig_cum_total_by_date, fig_intent, fig_browser]
 
 if __name__ == '__main__':
     app.run_server(host="localhost", port=8080,debug=False)
