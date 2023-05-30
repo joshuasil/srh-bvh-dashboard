@@ -123,14 +123,21 @@ app = Dash(__name__, external_stylesheets=[dbc.themes.BOOTSTRAP, dbc_css],
     ])
 server = app.server
 
-
+modal_desc = html.Div([html.H2('Average Confidence by Time'),
+                       html.P('This figure gives us the average confidence with which the chatbot executed the intent. The confidence is a value between 0 and 1, with 1 being the highest confidence. The average confidence is calculated by taking the average of all the confidence values for each day.'),
+                       html.H2('Cumulative Count by Day'),
+                       html.P('This figure gives us the cumulative count of the number of questions asked by users. The cumulative count is calculated by taking the sum of the number of questions asked by users for each day.'),
+                       html.H2('Top Intents'),
+                       html.P('This figure gives us the top 15 intents that were executed by the chatbot. The intents are the actions that the chatbot executes in response to a user question. The count is the number of times the intent was executed.'),
+                       html.H2('Browser Percentages'),
+                       html.P('This figure gives us the percentage of users that used each browser to access the chatbot. The browsers are the browsers that the users used to access the chatbot. The percentage is the percentage of users that used each browser.'),])
 modal = html.Div(
     [
         dbc.Button("Info", id="open", n_clicks=0),
         dbc.Modal(
             [
                 dbc.ModalHeader(dbc.ModalTitle("Dashboard Info")),
-                dbc.ModalBody("Write new information about the dashboard here."),
+                dbc.ModalBody(modal_desc),
                 dbc.ModalFooter(
                     dbc.Button(
                         "Close", id="close", className="ms-auto", n_clicks=0
@@ -138,6 +145,7 @@ modal = html.Div(
                 ),
             ],
             id="modal",
+            scrollable=True,
             is_open=False,
         ),
     ]
