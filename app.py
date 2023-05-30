@@ -130,7 +130,7 @@ modal_desc = html.Div([html.H2('Average Confidence by Time'),
                        html.H2('Top Intents'),
                        html.P('This figure gives us the top 15 intents that were executed by the chatbot. The intents are the actions that the chatbot executes in response to a user question. The count is the number of times the intent was executed.'),
                        html.H2('Browser Percentages'),
-                       html.P('This figure gives us the percentage of users that used each browser to access the chatbot. The browsers are the browsers that the users used to access the chatbot. The percentage is the percentage of users that used each browser.'),])
+                       html.P('This figure gives us the percentage of users that used each browser to access the chatbot. The percentage is the percentage of users that used each browser.'),])
 modal = html.Div(
     [
         dbc.Button("Info", id="open", n_clicks=0),
