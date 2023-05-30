@@ -122,19 +122,19 @@ cards_global = [
                                             min_date_allowed=df_comp['request_date'].min(),max_date_allowed=date.today(),
                                             start_date = df_comp['request_date'].min(),end_date = date.today())],className="form-check")),
                 dbc.Col(dbc.Card([html.P("Total Unique Users"),html.H6(unique_users,id='unique_users'),],
-                                    body=True,color="primary",inverse=True,style={'textAlign': 'center',"line-height":'0px'},className="mx-1"),),
+                                    body=True,color="primary",inverse=True,style={'textAlign': 'center'},className="mx-1"),),
                 dbc.Col(dbc.Card([html.P("Total Questions"),html.H6(tot_questions,id='tot_questions'),],
-                                    body=True,color="primary",inverse=True,style={'textAlign': 'center',"line-height":'0px'},className="mx-1"),),
+                                    body=True,color="primary",inverse=True,style={'textAlign': 'center'},className="mx-1"),),
                 dbc.Col(dbc.Card([html.P("Avg No. of Messages"),html.H6(avg_mess_per_user,id='avg_mess_per_user'),],
-                                    body=True,color="primary",inverse=True,style={'textAlign': 'center',"line-height":'0px'},className="mx-1"),),
+                                    body=True,color="primary",inverse=True,style={'textAlign': 'center'},className="mx-1"),),
                 dbc.Col(dbc.Card([html.P("Min No. of Messages"),html.H6(minimum_mess_per_user,id='minimum_mess_per_user'),],
-                                    body=True,color="primary",inverse=True,style={'textAlign': 'center',"line-height":'0px'},className="mx-1"),),
+                                    body=True,color="primary",inverse=True,style={'textAlign': 'center'},className="mx-1"),),
                 dbc.Col(dbc.Card([html.P("Max No. of Messages"),html.H6(maximum_mess_per_user,id='maximum_mess_per_user'),],
-                body=True,color="primary",inverse=True,style={'textAlign': 'center',"line-height":'0px'},className="mx-1"),),
+                body=True,color="primary",inverse=True,style={'textAlign': 'center'},className="mx-1"),),
                 dbc.Col(dbc.Card([html.P("Average Confidence"),html.H6(avg_accuracy,id='avg_accuracy'),],
-        body=True,color="primary",inverse=True,style={'textAlign': 'center',"line-height":'0px'},className="mx-1"),),
+        body=True,color="primary",inverse=True,style={'textAlign': 'center'},className="mx-1"),),
             dbc.Col(ThemeChangerAIO(aio_id="theme", radio_props={"value":dbc.themes.FLATLY}))
-            ],
+            ],style={'textAlign': 'center'}
         ),
     ]
 
