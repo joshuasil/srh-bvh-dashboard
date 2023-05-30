@@ -114,6 +114,46 @@ fig_browser =px.pie(count_by_browser, values='counts', names='browser', title='B
 labels = {'counts': 'count', 'hour': 'Hour'}, color_discrete_sequence=[colors['browser']])
 fig_browser.update_layout(title_x=0.5)
 
+dbc_css = (
+    "https://cdn.jsdelivr.net/gh/AnnMarieW/dash-bootstrap-templates@V1.0.1/dbc.min.css"
+)
+app = Dash(__name__, external_stylesheets=[dbc.themes.BOOTSTRAP, dbc_css],
+           meta_tags=[
+        {"name": "viewport", "content": "width=device-width, initial-scale=1"}
+    ])
+server = app.server
+
+
+modal = html.Div(
+    [
+        dbc.Button("Info", id="open", n_clicks=0),
+        dbc.Modal(
+            [
+                dbc.ModalHeader(dbc.ModalTitle("Dashboard Info")),
+                dbc.ModalBody("Write new information about the dashboard here."),
+                dbc.ModalFooter(
+                    dbc.Button(
+                        "Close", id="close", className="ms-auto", n_clicks=0
+                    )
+                ),
+            ],
+            id="modal",
+            is_open=False,
+        ),
+    ]
+)
+
+
+@app.callback(
+    Output("modal", "is_open"),
+    [Input("open", "n_clicks"), Input("close", "n_clicks")],
+    [State("modal", "is_open")],
+)
+def toggle_modal(n1, n2, is_open):
+    if n1 or n2:
+        return not is_open
+    return is_open
+
 
 cards_global = [
         dbc.Row(
@@ -133,7 +173,8 @@ cards_global = [
                 body=True,color="primary",inverse=True,style={'textAlign': 'center'},className="mx-1"),),
                 dbc.Col(dbc.Card([html.P("Average Confidence"),html.H6(avg_accuracy,id='avg_accuracy'),],
         body=True,color="primary",inverse=True,style={'textAlign': 'center'},className="mx-1"),),
-            dbc.Col(ThemeChangerAIO(aio_id="theme", radio_props={"value":dbc.themes.FLATLY}))
+            dbc.Col([dbc.Row(ThemeChangerAIO(aio_id="theme", radio_props={"value":dbc.themes.FLATLY})),
+                    dbc.Row(modal),]),
             ],style={'textAlign': 'center'}
         ),
     ]
@@ -154,15 +195,9 @@ figures_div = html.Div([
 ])
 
 
-dbc_css = (
-    "https://cdn.jsdelivr.net/gh/AnnMarieW/dash-bootstrap-templates@V1.0.1/dbc.min.css"
-)
 
-app = Dash(__name__, external_stylesheets=[dbc.themes.BOOTSTRAP, dbc_css],
-           meta_tags=[
-        {"name": "viewport", "content": "width=device-width, initial-scale=1"}
-    ])
-server = app.server
+
+
 app.layout = html.Div(style={'padding':10, 'backgroundColor': colors['background']}, children =[html.Div(navbar),
     dbc.Col(
                     children=[dbc.Card(
@@ -170,6 +205,7 @@ app.layout = html.Div(style={'padding':10, 'backgroundColor': colors['background
                     )]),
 figures_div
     ])
+
 
 @app.callback([
     dash.dependencies.Output('unique_users', 'children'),
@@ -184,9 +220,6 @@ figures_div
     dash.dependencies.Output('fig_intent', 'figure')],
     [dash.dependencies.Input('begin_date', 'start_date'),
     dash.dependencies.Input('begin_date', 'end_date')])
-
-
-
 # Callback Function
 
 def date_cum_count_media_type(begin_date, end_date):
