@@ -50,6 +50,7 @@ df_comp["request_timestamp"] = df_comp["request_timestamp"].dt.tz_localize('UTC'
 df_comp.sort_values(by=["request_timestamp"], inplace=True, ascending=False)
 conn.commit()
 conn.close()
+print(df_comp.shape)
 
 df_user_statistics = df_comp['conversation_id'].value_counts().rename_axis('users').reset_index(name='counts')
 unique_users = df_comp['conversation_id'].nunique()
@@ -267,6 +268,8 @@ def date_cum_count_media_type(begin_date, end_date):
     fig_browser =px.pie(count_by_browser, values='counts', names='browser', title='Browser Percentages',
     labels = {'counts': 'count', 'hour': 'Hour'}, color_discrete_sequence=[colors['browser']])
     fig_browser.update_layout(title_x=0.5)
+
+    print(df_comp.shape)
 
     return [unique_users, tot_questions, avg_mess_per_user, minimum_mess_per_user, maximum_mess_per_user, avg_accuracy, fig_acc_time, fig_cum_total_by_date, fig_intent, fig_browser]
 
