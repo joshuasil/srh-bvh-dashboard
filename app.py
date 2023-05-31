@@ -94,7 +94,7 @@ fig_acc_time.update_layout(title_x=0.5)
 fig_acc_time.update_xaxes(rangeslider_visible=True)
 
 
-fig_cum_total_by_date = px.line(df_count_by_date, x='dates', y=['cum_total', 'counts'], title = 'Cumulative Count by Day',
+fig_cum_total_by_date = px.line(df_count_by_date, x='dates', y=['cum_total', 'counts'], title = 'Cumulative Total by Day',
                               labels = {'dates': 'Date', 'cum_total': 'Cumulative Sum', 'counts':'Counts'}, render_mode='webg1')
 fig_cum_total_by_date.update_layout(title_x=0.5)
 fig_cum_total_by_date.update_xaxes(rangeslider_visible=True)
@@ -125,7 +125,7 @@ server = app.server
 
 modal_desc = html.Div([html.H2('Average Confidence by Time'),
                        html.P('This figure gives us the average confidence with which the chatbot executed the intent. The confidence is a value between 0 and 1, with 1 being the highest confidence. The average confidence is calculated by taking the average of all the confidence values for each day.'),
-                       html.H2('Cumulative Count by Day'),
+                       html.H2('Cumulative Total by Day'),
                        html.P('This figure gives us the cumulative count of the number of questions asked by users. The cumulative count is calculated by taking the sum of the number of questions asked by users for each day.'),
                        html.H2('Top Intents'),
                        html.P('This figure gives us the top 15 intents that were executed by the chatbot. The intents are the actions that the chatbot executes in response to a user question. The count is the number of times the intent was executed.'),
@@ -253,7 +253,7 @@ def date_cum_count_media_type(begin_date, end_date):
 
     df_count_by_date_new =updated_df['request_date'].value_counts().sort_index().rename_axis('dates').reset_index(name='counts')
     df_count_by_date_new['cum_total'] = df_count_by_date_new['counts'].cumsum()
-    fig_cum_total_by_date = px.line(df_count_by_date_new, x='dates', y=['cum_total', 'counts'], title = 'Cumulative Count by Day',
+    fig_cum_total_by_date = px.line(df_count_by_date_new, x='dates', y=['cum_total', 'counts'], title = 'Cumulative Total by Day',
                                 labels = {'dates': 'Date', 'cum_total': 'Cumulative Sum', 'counts':'Counts'}, render_mode='webg1')
     fig_cum_total_by_date.update_layout(title_x=0.5)
     fig_cum_total_by_date.update_xaxes(rangeslider_visible=True)
