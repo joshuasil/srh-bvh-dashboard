@@ -64,6 +64,7 @@ df_count_by_date =df_comp['request_date'].value_counts().sort_index().rename_axi
 df_count_by_date['cum_total'] = df_count_by_date['counts'].cumsum()
 
 # pandas group by and apply function
+df_comp['confidence'] = df_comp['confidence'].astype(float)
 df_confidence = df_comp.groupby(['request_date'])['confidence'].mean().reset_index(name='avg_confidence')
 df_confidence['avg_confidence'] = (df_confidence['avg_confidence']*100).apply(lambda x: round(x, 2))
 df_comp['browser_os_context'].fillna('unknown',inplace=True)
@@ -84,7 +85,7 @@ colors = {
 }
 
 covid_logo = Image.open('COVID_chatbot_logo.png')
-sph_logo = Image.open('coloradosph_stacked_schools.jpg')
+clinic_logo = Image.open('clinic chat logo.jpg')
 
 
 df_confidence = df_comp.groupby(['request_date'])['confidence'].mean().reset_index(name='avg_confidence')
@@ -189,9 +190,9 @@ cards_global = [
 
 # theme changer: dbc.Row(ThemeChangerAIO(aio_id="theme", radio_props={"value":dbc.themes.FLATLY}))
 navbar = dbc.NavbarSimple(
-    children=[html.Img(src=sph_logo,height='40px'),
+    children=[html.Img(src=clinic_logo,height='40px'),
     ],
-    brand="Clini Chat - Boulder Valley Health - Sexual Repreductive Health Chatbot Dashboard",
+    brand="Clinic Chat - Boulder Valley Health - Sexual Repreductive Health Chatbot Dashboard",
     brand_href="#",
     color="primary",
     dark=True,
