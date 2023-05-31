@@ -59,6 +59,7 @@ tot_questions = df_comp.shape[0]
 avg_mess_per_user = round(df_user_statistics['counts'].mean(),2)
 minimum_mess_per_user = df_user_statistics['counts'].min()
 maximum_mess_per_user = df_user_statistics['counts'].max()
+df_comp['request_timestamp'] = pd.to_datetime(df_comp['request_timestamp'])
 df_comp['request_date'] = df_comp['request_timestamp'].dt.date
 df_count_by_date =df_comp['request_date'].value_counts().sort_index().rename_axis('dates').reset_index(name='counts')
 df_count_by_date['cum_total'] = df_count_by_date['counts'].cumsum()
@@ -237,18 +238,22 @@ def date_cum_count_media_type(begin_date, end_date):
     end_date = datetime.strptime(end_date,'%Y-%m-%d')
     updated_df = df_comp.copy()
     updated_df['request_timestamp'] = pd.to_datetime(updated_df['request_timestamp'])
-    updated_df = df_comp[(df_comp['request_timestamp'] >= begin_date) & (df_comp['request_timestamp'] <= end_date)]
-    unique_users = updated_df['user_id'].nunique()
-    tot_questions = updated_df['user_id'].count()
-    avg_mess_per_user = round(updated_df.groupby('user_id')['user_id'].count().mean(),2)
-    minimum_mess_per_user = updated_df.groupby('user_id')['user_id'].count().min()
-    maximum_mess_per_user = updated_df.groupby('user_id')['user_id'].count().max()
+    print(updated_df['request_timestamp'].dtypes,type(begin_date),type(end_date))
+    
+    updated_df = updated_df[(updated_df['request_timestamp'] >= begin_date) & (updated_df['request_timestamp'] <= end_date)]
+    df_user_statistics_updated = updated_df['conversation_id'].value_counts().rename_axis('users').reset_index(name='counts')
+    unique_users = updated_df['conversation_id'].nunique()
+
+    tot_questions = updated_df.shape[0]
+    avg_mess_per_user = round(df_user_statistics_updated['counts'].mean(),2)
+    minimum_mess_per_user = df_user_statistics_updated['counts'].min()
+    maximum_mess_per_user = df_user_statistics_updated['counts'].max()
     avg_accuracy = round(updated_df['confidence'].mean(),4) * 100
     avg_accuracy = str(avg_accuracy) + '%'
 
-    df_confidence = df_comp.groupby(['request_date'])['confidence'].mean().reset_index(name='avg_confidence')
-    df_confidence['avg_confidence'] = (df_confidence['avg_confidence']*100).apply(lambda x: round(x, 2))
-    fig_acc_time = px.line(df_confidence, x='request_date', y='avg_confidence', title='Average Confidence by Time',
+    df_confidence_updated = updated_df.groupby(['request_date'])['confidence'].mean().reset_index(name='avg_confidence')
+    df_confidence['avg_confidence'] = (df_confidence_updated['avg_confidence']*100).apply(lambda x: round(x, 2))
+    fig_acc_time = px.line(df_confidence_updated, x='request_date', y='avg_confidence', title='Average Confidence by Time',
                         labels = {'index': 'Date', 'value':'Percentage'}, render_mode='webg1')
     fig_acc_time.update_layout(title_x=0.5)
     fig_acc_time.update_xaxes(rangeslider_visible=True)
@@ -260,13 +265,13 @@ def date_cum_count_media_type(begin_date, end_date):
     fig_cum_total_by_date.update_layout(title_x=0.5)
     fig_cum_total_by_date.update_xaxes(rangeslider_visible=True)
 
-    count_by_intent = updated_df[updated_df['intent_bot'].notna()]['intent_bot'].value_counts().rename_axis('intent').reset_index(name='counts')[:15]
-    fig_intent = px.bar(count_by_intent, y='intent', x="counts", orientation='h', title = 'Top Intents', color = 'counts',
+    count_by_intent_new = updated_df[updated_df['intent_bot'].notna()]['intent_bot'].value_counts().rename_axis('intent').reset_index(name='counts')[:15]
+    fig_intent = px.bar(count_by_intent_new, y='intent', x="counts", orientation='h', title = 'Top Intents', color = 'counts',
     labels = {'intent': 'Intent', 'counts': 'Count'}, color_continuous_scale = colors['intent'])
     fig_intent.update_layout(title_x=0.5,yaxis=dict(autorange="reversed"))
 
-    count_by_browser = updated_df['browser_os_context'].value_counts(normalize=True).rename_axis('browser').reset_index(name='counts')
-    fig_browser =px.pie(count_by_browser, values='counts', names='browser', title='Browser Percentages',
+    count_by_browser_new = updated_df['browser_os_context'].value_counts(normalize=True).rename_axis('browser').reset_index(name='counts')
+    fig_browser =px.pie(count_by_browser_new, values='counts', names='browser', title='Browser Percentages',
     labels = {'counts': 'count', 'hour': 'Hour'}, color_discrete_sequence=[colors['browser']])
     fig_browser.update_layout(title_x=0.5)
 
