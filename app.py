@@ -2,6 +2,7 @@ import pandas as pd
 import numpy as np
 import statistics as stat
 from datetime import datetime, date
+from dateutil import parser
 
 ## Plotly and Dash Imports
 import dash
@@ -46,7 +47,7 @@ sql_select_query = text('''SELECT * FROM public.srh_bvh_logs;''')
 sqlresult = conn.execute(sql_select_query)
 df_comp = pd.DataFrame(sqlresult.fetchall())
 df_comp.columns = sqlresult.keys()
-df_comp["request_timestamp"] = df_comp["request_timestamp"].dt.tz_localize('UTC').dt.tz_convert(None)
+df_comp["request_timestamp"] = df_comp["request_timestamp"].dt.tz_localize('America/Denver')
 df_comp.sort_values(by=["request_timestamp"], inplace=True, ascending=False)
 conn.commit()
 conn.close()
@@ -171,7 +172,7 @@ cards_global = [
             [   dbc.Col(dbc.DropdownMenu(label='Beginning and End Dates',
                                     children=[dcc.DatePickerRange(id='begin_date',
                                             min_date_allowed=df_comp['request_date'].min(),max_date_allowed=date.today(),
-                                            start_date = df_comp['request_date'].min(),end_date = date.today())],className="form-check")),
+                                            start_date = df_comp['request_date'].min(),end_date = datetime.now())],className="form-check")),
                 dbc.Col(dbc.Card([html.P("Total Unique Users"),html.H6(unique_users,id='unique_users'),],
                                     body=True,color="primary",inverse=True,style={'textAlign': 'center'},className="mx-1"),),
                 dbc.Col(dbc.Card([html.P("Total Questions"),html.H6(tot_questions,id='tot_questions'),],
@@ -235,11 +236,14 @@ figures_div
 
 def date_cum_count_media_type(begin_date, end_date):
     begin_date = datetime.strptime(begin_date,'%Y-%m-%d')
-    end_date = datetime.strptime(end_date,'%Y-%m-%d')
+    print("end_date",end_date)
+    #end_date = datetime.strptime(end_date,'%Y-%m-%d')
+    end_date = parser.parse(end_date)
+    print("end_date after",end_date)
     updated_df = df_comp.copy()
-    updated_df['request_timestamp'] = pd.to_datetime(updated_df['request_timestamp'])
+    updated_df['request_timestamp'] = pd.to_datetime(updated_df['request_timestamp']).dt.tz_localize(None)
     print(updated_df['request_timestamp'].dtypes,type(begin_date),type(end_date))
-    
+    print(updated_df['request_timestamp'].max())
     updated_df = updated_df[(updated_df['request_timestamp'] >= begin_date) & (updated_df['request_timestamp'] <= end_date)]
     df_user_statistics_updated = updated_df['conversation_id'].value_counts().rename_axis('users').reset_index(name='counts')
     unique_users = updated_df['conversation_id'].nunique()
