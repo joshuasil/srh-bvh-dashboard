@@ -1,15 +1,17 @@
 import pandas as pd
 import numpy as np
 import statistics as stat
-from datetime import datetime, date
+from datetime import datetime, date, timedelta
 from dateutil import parser
+from get_postgres_str import get_postgres_str
+from components import *
 
 ## Plotly and Dash Imports
 import dash
 import dash_bootstrap_components as dbc
-from dash import dcc, Dash
-from dash import html, callback_context
+from dash import dcc, Dash, html, callback_context
 from dash.dependencies import Input, Output, State, ClientsideFunction
+from dash_bootstrap_templates import ThemeChangerAIO, template_from_url
 import plotly.express as px
 from dash.exceptions import PreventUpdate
 from PIL import Image
@@ -17,27 +19,11 @@ from PIL import Image
 ## SQL Imports
 from flask import Flask
 import psycopg2
-from sqlalchemy import create_engine
-from dash_bootstrap_templates import ThemeChangerAIO, template_from_url
-from sqlalchemy import text
-from dotenv import load_dotenv
+from sqlalchemy import create_engine, text
 
-import os
-load_dotenv()
+
 ## Postgres username, password, and database name
-POSTGRES_ADDRESS = os.getenv('POSTGRES_ADDRESS') ## INSERT YOUR DB ADDRESS IF IT'S NOT ON PANOPLY
-POSTGRES_PORT = os.getenv('POSTGRES_PORT')
-POSTGRES_USERNAME = os.getenv('POSTGRES_USERNAME') ## CHANGE THIS TO YOUR PANOPLY/POSTGRES USERNAME
-POSTGRES_PASSWORD = os.getenv('POSTGRES_PASSWORD') ## CHANGE THIS TO YOUR PANOPLY/POSTGRES PASSWORD
-POSTGRES_DBNAME = os.getenv('POSTGRES_DBNAME') ## CHANGE THIS TO YOUR DATABASE NAME
-
-## A long string that contains the necessary Postgres login information
-postgres_str = ('postgresql://{username}:{password}@{ipaddress}:{port}/{dbname}'
-.format(username=POSTGRES_USERNAME,
-password=POSTGRES_PASSWORD,
-ipaddress=POSTGRES_ADDRESS,
-port=POSTGRES_PORT,
-dbname=POSTGRES_DBNAME))
+postgres_str = get_postgres_str()
 
 
 ## Create the Connection
@@ -47,76 +33,31 @@ sql_select_query = text('''SELECT * FROM public.srh_bvh_logs;''')
 sqlresult = conn.execute(sql_select_query)
 df_comp = pd.DataFrame(sqlresult.fetchall())
 df_comp.columns = sqlresult.keys()
-df_comp["request_timestamp"] = df_comp["request_timestamp"].dt.tz_localize('America/Denver')
-df_comp.sort_values(by=["request_timestamp"], inplace=True, ascending=False)
 conn.commit()
 conn.close()
-print(df_comp.shape)
 
-df_user_statistics = df_comp['conversation_id'].value_counts().rename_axis('users').reset_index(name='counts')
-unique_users = df_comp['conversation_id'].nunique()
-
-tot_questions = df_comp.shape[0]
-avg_mess_per_user = round(df_user_statistics['counts'].mean(),2)
-minimum_mess_per_user = df_user_statistics['counts'].min()
-maximum_mess_per_user = df_user_statistics['counts'].max()
+# processing main dataframe
+df_comp["request_timestamp"] = df_comp["request_timestamp"].dt.tz_localize('America/Denver')
+df_comp.sort_values(by=["request_timestamp"], inplace=True, ascending=False)
 df_comp['request_timestamp'] = pd.to_datetime(df_comp['request_timestamp'])
 df_comp['request_date'] = df_comp['request_timestamp'].dt.date
-df_count_by_date =df_comp['request_date'].value_counts().sort_index().rename_axis('dates').reset_index(name='counts')
-df_count_by_date['cum_total'] = df_count_by_date['counts'].cumsum()
-
-# pandas group by and apply function
 df_comp['confidence'] = df_comp['confidence'].astype(float)
-df_confidence = df_comp.groupby(['request_date'])['confidence'].mean().reset_index(name='avg_confidence')
-df_confidence['avg_confidence'] = (df_confidence['avg_confidence']*100).apply(lambda x: round(x, 2))
 df_comp['browser_os_context'].fillna('unknown',inplace=True)
 
-avg_accuracy = round(df_comp['confidence'].mean()*100,2)
-avg_accuracy = str(avg_accuracy) + '%'
-colors = {
-    'background': '#FEFFFF',
-    'graph background': '#CDD0D0',
-    'title text': '#012337',
-    'intent': 'oranges', # Will use continuous color sequence
-    'source': '#EF8B69', # Will use discrete color sequence
-    'browser': '#F1E091', # Will use discrete color sequence
-    'hour': 'greens', # Will use continuous color sequence
-    'subtitle text': '#012337',
-    'label text': '#012337',
-    'line color': '#056B7D'
-}
+print(df_comp.shape)
+
+unique_users, tot_questions, avg_mess_per_user, minimum_mess_per_user, maximum_mess_per_user, avg_accuracy = get_metrics(df_comp)
+
 
 covid_logo = Image.open('COVID_chatbot_logo.png')
 clinic_logo = Image.open('clinic chat logo.jpg')
 
-
-df_confidence = df_comp.groupby(['request_date'])['confidence'].mean().reset_index(name='avg_confidence')
-df_confidence['avg_confidence'] = (df_confidence['avg_confidence']*100).apply(lambda x: round(x, 2))
-fig_acc_time = px.line(df_confidence, x='request_date', y='avg_confidence', title='Average Confidence by Time',
-                       labels = {'index': 'Date', 'value':'Percentage'}, render_mode='webg1')
-fig_acc_time.update_layout(title_x=0.5)
-fig_acc_time.update_xaxes(rangeslider_visible=True)
+fig_acc_time = get_fig_acc_time(df_comp)
+fig_cum_total_by_date = get_fig_cum_total_by_date(df_comp)
+fig_intent = get_count_by_intent(df_comp)
+fig_browser = get_count_by_browser(df_comp)
 
 
-fig_cum_total_by_date = px.line(df_count_by_date, x='dates', y=['cum_total', 'counts'], title = 'Cumulative Total by Day',
-                              labels = {'dates': 'Date', 'cum_total': 'Cumulative Sum', 'counts':'Counts'}, render_mode='webg1')
-fig_cum_total_by_date.update_layout(title_x=0.5)
-fig_cum_total_by_date.update_xaxes(rangeslider_visible=True)
-
-
-
-count_by_intent = df_comp[df_comp['intent_bot'].notna()]['intent_bot'].value_counts().rename_axis('intent').reset_index(name='counts')[:15]
-fig_intent = px.bar(count_by_intent, y='intent', x="counts", orientation='h', title = 'Top Intents', color = 'counts',
-labels = {'intent': 'Intent', 'counts': 'Count'}, color_continuous_scale = colors['intent'])
-fig_intent.update_layout(title_x=0.5,yaxis=dict(autorange="reversed"))
-
-
-
-
-count_by_browser = df_comp['browser_os_context'].value_counts(normalize=True).rename_axis('browser').reset_index(name='counts')
-fig_browser =px.pie(count_by_browser, values='counts', names='browser', title='Browser Percentages',
-labels = {'counts': 'count', 'hour': 'Hour'}, color_discrete_sequence=[colors['browser']])
-fig_browser.update_layout(title_x=0.5)
 
 dbc_css = (
     "https://cdn.jsdelivr.net/gh/AnnMarieW/dash-bootstrap-templates@V1.0.1/dbc.min.css"
@@ -127,33 +68,16 @@ app = Dash(__name__, external_stylesheets=[dbc.themes.BOOTSTRAP, dbc_css],
     ])
 server = app.server
 
-modal_desc = html.Div([html.H2('Average Confidence by Time'),
-                       html.P('This figure gives us the average confidence with which the chatbot executed the intent. The confidence is a value between 0 and 1, with 1 being the highest confidence. The average confidence is calculated by taking the average of all the confidence values for each day.'),
-                       html.H2('Cumulative Total by Day'),
-                       html.P('This figure gives us the cumulative count of the number of questions asked by users. The cumulative count is calculated by taking the sum of the number of questions asked by users for each day.'),
-                       html.H2('Top Intents'),
-                       html.P('This figure gives us the top 15 intents that were executed by the chatbot. The intents are the actions that the chatbot executes in response to a user question. The count is the number of times the intent was executed.'),
-                       html.H2('Browser Percentages'),
-                       html.P('This figure gives us the percentage of users that used each browser to access the chatbot. The percentage is the percentage of users that used each browser.'),])
-modal = html.Div(
-    [
-        dbc.Button("Info", id="open", n_clicks=0),
-        dbc.Modal(
-            [
-                dbc.ModalHeader(dbc.ModalTitle("Dashboard Info")),
+modal_desc = html.Div([html.H2('Average Confidence by Time'),html.P(avg_condifence_by_time_text),
+                       html.H2('Cumulative Total by Day'),html.P(cum_tot_by_day_text),
+                       html.H2('Top Intents'),html.P(top_intents_text),
+                       html.H2('Browser Percentages'),html.P(browser_percentages_text),])
+
+modal = html.Div([dbc.Button("Info", id="open", n_clicks=0),
+        dbc.Modal([dbc.ModalHeader(dbc.ModalTitle("Dashboard Info")),
                 dbc.ModalBody(modal_desc),
-                dbc.ModalFooter(
-                    dbc.Button(
-                        "Close", id="close", className="ms-auto", n_clicks=0
-                    )
-                ),
-            ],
-            id="modal",
-            scrollable=True,
-            is_open=False,
-        ),
-    ]
-)
+                dbc.ModalFooter(dbc.Button("Close", id="close", className="ms-auto", n_clicks=0)),],
+            id="modal",scrollable=True,is_open=False,),])
 
 
 @app.callback(
@@ -236,48 +160,17 @@ figures_div
 
 def date_cum_count_media_type(begin_date, end_date):
     begin_date = datetime.strptime(begin_date,'%Y-%m-%d')
-    print("end_date",end_date)
-    #end_date = datetime.strptime(end_date,'%Y-%m-%d')
     end_date = parser.parse(end_date)
-    print("end_date after",end_date)
+    end_date = end_date + timedelta(seconds=86399)
     updated_df = df_comp.copy()
     updated_df['request_timestamp'] = pd.to_datetime(updated_df['request_timestamp']).dt.tz_localize(None)
-    print(updated_df['request_timestamp'].dtypes,type(begin_date),type(end_date))
-    print(updated_df['request_timestamp'].max())
     updated_df = updated_df[(updated_df['request_timestamp'] >= begin_date) & (updated_df['request_timestamp'] <= end_date)]
-    df_user_statistics_updated = updated_df['conversation_id'].value_counts().rename_axis('users').reset_index(name='counts')
-    unique_users = updated_df['conversation_id'].nunique()
+    unique_users, tot_questions, avg_mess_per_user, minimum_mess_per_user, maximum_mess_per_user, avg_accuracy = get_metrics(updated_df)
 
-    tot_questions = updated_df.shape[0]
-    avg_mess_per_user = round(df_user_statistics_updated['counts'].mean(),2)
-    minimum_mess_per_user = df_user_statistics_updated['counts'].min()
-    maximum_mess_per_user = df_user_statistics_updated['counts'].max()
-    avg_accuracy = round(updated_df['confidence'].mean(),4) * 100
-    avg_accuracy = str(avg_accuracy) + '%'
-
-    df_confidence_updated = updated_df.groupby(['request_date'])['confidence'].mean().reset_index(name='avg_confidence')
-    df_confidence['avg_confidence'] = (df_confidence_updated['avg_confidence']*100).apply(lambda x: round(x, 2))
-    fig_acc_time = px.line(df_confidence_updated, x='request_date', y='avg_confidence', title='Average Confidence by Time',
-                        labels = {'index': 'Date', 'value':'Percentage'}, render_mode='webg1')
-    fig_acc_time.update_layout(title_x=0.5)
-    fig_acc_time.update_xaxes(rangeslider_visible=True)
-
-    df_count_by_date_new =updated_df['request_date'].value_counts().sort_index().rename_axis('dates').reset_index(name='counts')
-    df_count_by_date_new['cum_total'] = df_count_by_date_new['counts'].cumsum()
-    fig_cum_total_by_date = px.line(df_count_by_date_new, x='dates', y=['cum_total', 'counts'], title = 'Cumulative Total by Day',
-                                labels = {'dates': 'Date', 'cum_total': 'Cumulative Sum', 'counts':'Counts'}, render_mode='webg1')
-    fig_cum_total_by_date.update_layout(title_x=0.5)
-    fig_cum_total_by_date.update_xaxes(rangeslider_visible=True)
-
-    count_by_intent_new = updated_df[updated_df['intent_bot'].notna()]['intent_bot'].value_counts().rename_axis('intent').reset_index(name='counts')[:15]
-    fig_intent = px.bar(count_by_intent_new, y='intent', x="counts", orientation='h', title = 'Top Intents', color = 'counts',
-    labels = {'intent': 'Intent', 'counts': 'Count'}, color_continuous_scale = colors['intent'])
-    fig_intent.update_layout(title_x=0.5,yaxis=dict(autorange="reversed"))
-
-    count_by_browser_new = updated_df['browser_os_context'].value_counts(normalize=True).rename_axis('browser').reset_index(name='counts')
-    fig_browser =px.pie(count_by_browser_new, values='counts', names='browser', title='Browser Percentages',
-    labels = {'counts': 'count', 'hour': 'Hour'}, color_discrete_sequence=[colors['browser']])
-    fig_browser.update_layout(title_x=0.5)
+    fig_acc_time = get_fig_acc_time(updated_df)
+    fig_cum_total_by_date = get_fig_cum_total_by_date(updated_df)
+    fig_intent = get_count_by_intent(updated_df)
+    fig_browser = get_count_by_browser(updated_df)
 
     print(df_comp.shape)
 
