@@ -26,7 +26,8 @@ def get_metrics(df):
     df_confidence['avg_confidence'] = (df_confidence['avg_confidence']*100).apply(lambda x: round(x, 2))
     avg_accuracy = round(df['confidence'].mean()*100,2)
     avg_accuracy = str(avg_accuracy) + '%'
-    return unique_users, tot_questions, avg_mess_per_user, minimum_mess_per_user, maximum_mess_per_user, avg_accuracy
+    book_apt_count = df[df['intent_bot']=='schedule_an_appointment'].shape[0]
+    return unique_users, tot_questions, avg_mess_per_user, minimum_mess_per_user, maximum_mess_per_user, avg_accuracy, book_apt_count
 
 def get_fig_acc_time(df):
     df_confidence = df.groupby(['request_date'])['confidence'].mean().reset_index(name='avg_confidence')
@@ -70,3 +71,11 @@ avg_condifence_by_time_text = 'This figure gives us the average confidence with 
 cum_tot_by_day_text = 'This figure gives us the cumulative count of the number of questions asked by users. The cumulative count is calculated by taking the sum of the number of questions asked by users for each day.'
 top_intents_text = 'This figure gives us the top 15 intents that were executed by the chatbot. The intents are the actions that the chatbot executes in response to a user question. The count is the number of times the intent was executed.'
 browser_percentages_text = 'This figure gives us the percentage of users that used each browser to access the chatbot. The percentage is the percentage of users that used each browser.'
+total_unique_users_text = 'This is the total number of unique users that have accessed the chatbot.'
+total_questions_text = 'This is the total number of questions that have been asked by users.'
+avg_messages_text = 'This is the total number of messages received by the system divided by the number of conversations.'
+min_messages_text = 'This is the minimum number of messages received by the system for a conversation.'
+max_messages_text = 'This is the maximum number of messages received by the system for a conversation.'
+avg_accuracy_text = 'This is the average confidence with which the chatbot executed the intent. The confidence is a value between 0 and 1, with 1 being the highest confidence.'
+dates_text = 'This is the date range for which the data is being displayed. The start and end date can be adjusted by picking on the calendar icon and selecting the desired dates.'
+book_apt_count_text = 'This is the total number of times users asked the chatbot to book an appointment.'

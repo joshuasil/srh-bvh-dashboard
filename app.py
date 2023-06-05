@@ -46,7 +46,7 @@ df_comp['browser_os_context'].fillna('unknown',inplace=True)
 
 print(df_comp.shape)
 
-unique_users, tot_questions, avg_mess_per_user, minimum_mess_per_user, maximum_mess_per_user, avg_accuracy = get_metrics(df_comp)
+unique_users, tot_questions, avg_mess_per_user, minimum_mess_per_user, maximum_mess_per_user, avg_accuracy, book_apt_count = get_metrics(df_comp)
 
 
 covid_logo = Image.open('COVID_chatbot_logo.png')
@@ -68,16 +68,19 @@ app = Dash(__name__, external_stylesheets=[dbc.themes.BOOTSTRAP, dbc_css],
     ])
 server = app.server
 
-modal_desc = html.Div([html.H2('Average Confidence by Time'),html.P(avg_condifence_by_time_text),
-                       html.H2('Cumulative Total by Day'),html.P(cum_tot_by_day_text),
-                       html.H2('Top Intents'),html.P(top_intents_text),
+modal_desc = html.Div([html.H2('Beginning and End Dates'),html.P(dates_text),html.H2('Total Unique Users'),html.P(total_unique_users_text),
+                       html.H2('Total Questions'),html.P(total_questions_text),html.H2('Avg No. of Messages'),html.P(avg_messages_text),
+                       html.H2('Min No. of Messages'),html.P(min_messages_text),html.H2('Max No. of Messages'),html.P(max_messages_text),
+                       html.H2('Average Confidence'),html.P(avg_accuracy_text),html.H2('Book Appointment Count'),html.P(book_apt_count_text), 
+                       html.H2('Average Confidence by Time'),html.P(avg_condifence_by_time_text),
+                       html.H2('Cumulative Total by Day'),html.P(cum_tot_by_day_text),html.H2('Top Intents'),html.P(top_intents_text),
                        html.H2('Browser Percentages'),html.P(browser_percentages_text),])
 
 modal = html.Div([dbc.Button("Info", id="open", n_clicks=0),
         dbc.Modal([dbc.ModalHeader(dbc.ModalTitle("Dashboard Info")),
                 dbc.ModalBody(modal_desc),
                 dbc.ModalFooter(dbc.Button("Close", id="close", className="ms-auto", n_clicks=0)),],
-            id="modal",scrollable=True,is_open=False,),])
+            id="modal",scrollable=True,is_open=False,size='xl' ,),])
 
 
 @app.callback(
@@ -108,7 +111,9 @@ cards_global = [
                 dbc.Col(dbc.Card([html.P("Max No. of Messages"),html.H6(maximum_mess_per_user,id='maximum_mess_per_user'),],
                 body=True,color="primary",inverse=True,style={'textAlign': 'center'},className="mx-1"),),
                 dbc.Col(dbc.Card([html.P("Average Confidence"),html.H6(avg_accuracy,id='avg_accuracy'),],
-        body=True,color="primary",inverse=True,style={'textAlign': 'center'},className="mx-1"),),
+                                     body=True,color="primary",inverse=True,style={'textAlign': 'center'},className="mx-1"),),
+                dbc.Col(dbc.Card([html.P("Book Appointment Count"),html.H6(book_apt_count,id='book_apt_count'),],
+                                     body=True,color="primary",inverse=True,style={'textAlign': 'center'},className="mx-1"),),
             dbc.Col(modal),
             ],style={'textAlign': 'center'}
         ),
@@ -165,7 +170,7 @@ def date_cum_count_media_type(begin_date, end_date):
     updated_df = df_comp.copy()
     updated_df['request_timestamp'] = pd.to_datetime(updated_df['request_timestamp']).dt.tz_localize(None)
     updated_df = updated_df[(updated_df['request_timestamp'] >= begin_date) & (updated_df['request_timestamp'] <= end_date)]
-    unique_users, tot_questions, avg_mess_per_user, minimum_mess_per_user, maximum_mess_per_user, avg_accuracy = get_metrics(updated_df)
+    unique_users, tot_questions, avg_mess_per_user, minimum_mess_per_user, maximum_mess_per_user, avg_accuracy, book_apt_count = get_metrics(updated_df)
 
     fig_acc_time = get_fig_acc_time(updated_df)
     fig_cum_total_by_date = get_fig_cum_total_by_date(updated_df)
