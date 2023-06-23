@@ -123,7 +123,7 @@ cards_global = [
 navbar = dbc.NavbarSimple(
     children=[html.Img(src=clinic_logo,height='40px'),
     ],
-    brand="Clinic Chat - Boulder Valley Health - Sexual Repreductive Health Chatbot Dashboard",
+    brand="Clinic Chat - Boulder Valley Health - Sexual Reproductive Health Chatbot Dashboard",
     brand_href="#",
     color="primary",
     dark=True,
