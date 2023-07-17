@@ -38,6 +38,7 @@ conn.commit()
 conn.close()
 
 # processing main dataframe
+df_comp = df_comp[df_comp['input'].notna()]
 df_comp["request_timestamp"] = df_comp["request_timestamp"].dt.tz_localize('America/Denver')
 df_comp.sort_values(by=["request_timestamp"], inplace=True, ascending=False)
 df_comp['request_timestamp'] = pd.to_datetime(df_comp['request_timestamp'])
