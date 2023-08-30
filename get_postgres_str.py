@@ -19,3 +19,4 @@ def get_postgres_str():
     dbname=POSTGRES_DBNAME))
 
     return postgres_str
+
