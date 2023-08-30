@@ -52,7 +52,8 @@ unique_users, tot_questions, avg_mess_per_user, minimum_mess_per_user, maximum_m
 
 
 covid_logo = Image.open('COVID_chatbot_logo.png')
-clinic_logo = Image.open('logo.jpg')
+clinic_logo = Image.open('logo.png')
+clinic_logo = clinic_logo.convert('RGB')
 
 fig_acc_time = get_fig_acc_time(df_comp)
 fig_cum_total_by_date = get_fig_cum_total_by_date(df_comp)
