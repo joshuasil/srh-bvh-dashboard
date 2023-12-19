@@ -32,8 +32,9 @@ def get_metrics(df):
 def get_fig_acc_time(df):
     df_confidence = df.groupby(['request_date'])['confidence'].mean().reset_index(name='avg_confidence')
     df_confidence['avg_confidence'] = (df_confidence['avg_confidence']*100).apply(lambda x: round(x, 2))
-    fig_acc_time = px.line(df_confidence, x='request_date', y='avg_confidence', title='Average Confidence by Time',
-                        labels = {'request_date': 'Drage here to adjust dates', 'avg_confidence':'Average confidence Percentage'}, render_mode='webg1')
+    df_confidence['cumulative_avg_confidence'] = df_confidence['avg_confidence'].expanding().mean()
+    fig_acc_time = px.line(df_confidence, x='request_date', y='cumulative_avg_confidence', title='Cumulative Average Confidence by Time',
+                        labels = {'request_date': 'Drag here to adjust dates', 'cumulative_avg_confidence':'Cumulative Average confidence Percentage'}, render_mode='webgl')
     fig_acc_time.update_layout(title_x=0.5)
     fig_acc_time.update_layout(
                 xaxis=dict(rangeslider=dict(visible=True,bgcolor="#636EFA",thickness=0.04),
