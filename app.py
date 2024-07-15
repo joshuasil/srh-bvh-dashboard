@@ -12,7 +12,7 @@ import dash
 import dash_bootstrap_components as dbc
 from dash import dcc, Dash, html, callback_context
 from dash.dependencies import Input, Output, State, ClientsideFunction
-from dash_bootstrap_templates import ThemeChangerAIO, template_from_url
+# from dash_bootstrap_templates import ThemeChangerAIO, template_from_url
 import plotly.express as px
 from dash.exceptions import PreventUpdate
 from PIL import Image
